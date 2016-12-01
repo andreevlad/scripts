@@ -100,9 +100,10 @@ convert_video () {
 # BEGIN SCRIPT #
 #####      #####
 
+create_dir
+
 begin
 
-create_dir
 check_if_input_dir_empty
 
 
