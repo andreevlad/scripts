@@ -1,0 +1,13 @@
+#!/usr/bin/expect -f
+set ID_RSA "$::env(HOME).ssh/id_rsa"
+
+puts "$ID_RSA \n"
+
+spawn ssh-add $ID_RSA
+expect "Enter passphrase for $ID_RSA:"
+send "id_rsa_pass\n";
+
+spawn ssh-add -l
+
+interact
+
