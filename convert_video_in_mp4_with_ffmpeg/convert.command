@@ -10,6 +10,9 @@ SCRIPT_DIR=`dirname "$0"`
 
 INPUT_DIR="$SCRIPT_DIR/in"
 OUTPUT_DIR="$SCRIPT_DIR/out"
+VIDEO_BITRATE="1000k"
+AUDIO_BITRATE="128k"
+
 
 echo $INPUT_DIR
 echo $OUTPUT_DIR
@@ -93,7 +96,7 @@ set_ffmpeg_params () {
 
 convert_video () {
 	FILE=${1##*/}
-	ffmpeg -v info -hide_banner -i "$1" $VIDEO_PREF $AUDIO_PREF "$OUTPUT_DIR/${FILE%.*}.mp4"
+	ffmpeg -v info -hide_banner -i "$1" $VIDEO_PREF -b:v $VIDEO_BITRATE $AUDIO_PREF -b:a $AUDIO_BITRATE "$OUTPUT_DIR/${FILE%.*}.mp4"
 }
 
 #####      #####
