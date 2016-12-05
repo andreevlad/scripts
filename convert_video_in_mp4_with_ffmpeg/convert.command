@@ -10,7 +10,7 @@ SCRIPT_DIR=`dirname "$0"`
 
 INPUT_DIR="$SCRIPT_DIR/in"
 OUTPUT_DIR="$SCRIPT_DIR/out"
-VIDEO_BITRATE="1000k"
+VIDEO_BITRATE="1200"
 AUDIO_BITRATE="128k"
 
 
@@ -50,16 +50,6 @@ check_if_input_dir_empty () {
 }
 
 check_file_to_video_content () {
-        MIME_TYPE=$(file -b --mime-type "$1" 2> /dev/null)
-        if `echo $MIME_TYPE | grep "video/" &> /dev/null`; then
-                return 0
-        else
-                echo -e "\n File $1 is not video \n"
-		return 1
-        fi
-}
-
-check_file_to_video_content_2 () {
 	if ! ffprobe -v quiet  "$1"
 	then
 		echo -e "\n $1 - is broken or not video file \n"
@@ -77,8 +67,11 @@ check_file_to_video_content_2 () {
 }
 
 set_ffmpeg_params () {
-	AUDIO_PREF="-c:a copy"
-	VIDEO_PREF="-c:v copy"
+	AUDIO_PREF="-c:a aac"
+	VIDEO_PREF="-c:v libx264"
+
+	# AUDIO_PREF="-c:a copy"
+	# VIDEO_PREF="-c:v copy"
 	# streams_stream_0_codec_name="h264"
 	# streams_stream_1_codec_name="aac"
 
@@ -96,7 +89,9 @@ set_ffmpeg_params () {
 
 convert_video () {
 	FILE=${1##*/}
-	ffmpeg -v info -hide_banner -i "$1" $VIDEO_PREF -b:v $VIDEO_BITRATE $AUDIO_PREF -b:a $AUDIO_BITRATE "$OUTPUT_DIR/${FILE%.*}.mp4"
+        ffmpeg -v info -hide_banner -i "$1" $VIDEO_PREF -x264opts bitrate=$VIDEO_BITRATE:vbv-maxrate=$VIDEO_BITRATE:vbv-bufsize=200:nal-hrd=cbr:force-cfr=1 -r 30 \
+        -movflags +faststart -pix_fmt yuv420p -preset slow -tune film \
+        $AUDIO_PREF -ar 44100 -b:a $AUDIO_BITRATE "$OUTPUT_DIR/${FILE%.*}.mp4"
 }
 
 #####      #####
@@ -112,7 +107,7 @@ check_if_input_dir_empty
 
 for i in $INPUT_DIR/*
 do
-	if check_file_to_video_content_2 "$i"
+	if check_file_to_video_content "$i"
 	then
 		set_ffmpeg_params "$i"
 		echo -e "\n\n\n $i --- $VIDEO_PREF $AUDIO_PREF \n"
